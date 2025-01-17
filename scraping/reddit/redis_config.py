@@ -1,6 +1,6 @@
 # redis_config.py
 import os
-from taskiq_redis import RedisAsyncBroker
+from taskiq_redis import ListQueueBroker 
 from taskiq import TaskiqEvents, TaskiqScheduler
 
 
@@ -35,14 +35,10 @@ async def check_redis_connection():
         return False
         
 # Create broker instance
-broker = RedisAsyncBroker(
+broker = ListQueueBroker(
     url=get_redis_url(),
-    prefix="reddit_scraper",  # Namespace for your tasks
-    retry_policy={  # Optional: Configure retries
-        "max_retries": 3,
-        "delay_seconds": 5,
-        "max_delay_seconds": 60,
-    }
+    queue_name="reddit_scraper",
+    
 )
 
 # Optional: Configure broker events
