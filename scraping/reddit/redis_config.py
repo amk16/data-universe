@@ -42,14 +42,11 @@ broker = ListQueueBroker(
 )
 
 # Optional: Configure broker events
-@broker.on_event(TaskiqEvents.BEFORE_PROCESS)
-async def before_process(task_name: str, **kwargs):
+@broker.on_event(TaskiqEvents.WORKER_STARTUP)
+async def on_worker_startup(task_name: str, **kwargs):
     print(f"Starting task: {task_name}")
 
-@broker.on_event(TaskiqEvents.AFTER_PROCESS)
-async def after_process(task_name: str, **kwargs):
+@broker.on_event(TaskiqEvents.WORKER_SHUTDOWN)
+async def on_worker_shutdown(task_name: str, **kwargs):
     print(f"Completed task: {task_name}")
 
-@broker.on_event(TaskiqEvents.ON_ERROR)
-async def on_error(task_name: str, error: Exception, **kwargs):
-    print(f"Error in task {task_name}: {error}")
