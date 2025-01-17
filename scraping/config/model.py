@@ -9,7 +9,7 @@ they contain natively serializable/deseriazable fields. All code should use the 
 in scraping/scraper.py. These classes are only intended to be used for deserializing
 the scraping_config JSON file.
 """
-
+import random
 from typing import List, Optional, Dict
 from pydantic import BaseModel, Field, PositiveInt, ConfigDict
 from common import constants
