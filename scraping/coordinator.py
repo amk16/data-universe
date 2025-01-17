@@ -13,7 +13,7 @@ from common.data import DataLabel, DataSource, StrictBaseModel, TimeBucket
 from scraping.provider import ScraperProvider
 from scraping.scraper import ScrapeConfig, ScraperId
 from storage.miner.miner_storage import MinerStorage
-
+from scraping.reddit.parallel_reddit_scraper import ParallelRedditScraper
 
 class LabelScrapingConfig(StrictBaseModel):
     """Describes what labels to scrape."""
