@@ -1,4 +1,3 @@
-from taskiq import TaskiqEvents, TaskiqScheduler, AsyncBroker
 from scraping.reddit.redis_config import broker
 from typing import List, Optional
 import asyncio

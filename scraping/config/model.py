@@ -47,7 +47,7 @@ class LabelScrapingConfig(StrictBaseModel):
         description="The maximum number of items to fetch in a single scrape for this label. If None, the scraper will fetch as many items possible.",
     )
 
-    def to_coordinator_label_scrape_config(self) -> coordinator.LabelScrapingConfig:
+    def to_coordinator_label_scrape_config(self, is_parallel: bool) -> coordinator.LabelScrapingConfig:
         """Returns the internal LabelScrapingConfig representation"""
 
         if not self.label_choices:
@@ -57,7 +57,11 @@ class LabelScrapingConfig(StrictBaseModel):
                 max_data_entities=self.max_data_entities,
             )
 
-        labels = [DataLabel(value=val) for val in self.label_choices]
+        if is_parallel: 
+            labels = [DataLabel(value=val) for val in self.label_choices]
+        else:
+            selected_label = random.choice(self.label_choices)
+            labels = [DataLabel(value=selected_label)]
 
         return coordinator.LabelScrapingConfig(
             label_choices=labels,
@@ -92,6 +96,7 @@ class ScraperConfig(StrictBaseModel):
         For parallel scrapers (REDDIT_PARALLEL), all labels are processed simultaneously.
         For regular scrapers, the existing random selection behavior is maintained.
         """
+        is_parallel = self.scraper_id == ScraperId.REDDIT_PARALLEL
         return coordinator.ScraperConfig(
             cadence_seconds=self.cadence_seconds,
             labels_to_scrape=[
