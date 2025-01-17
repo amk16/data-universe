@@ -4,7 +4,7 @@ from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
 from scraping.reddit.reddit_custom_scraper import RedditCustomScraper  # adjust import path
-from scraping.reddit.scraper import ScrapeConfig
+from scraping.scraper import ScrapeConfig
 import asyncpraw
 from common.date_range import DateRange
 from common.data import DataLabel, DataEntity
