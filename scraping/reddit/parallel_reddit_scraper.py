@@ -3,7 +3,7 @@ from scraping.reddit.redis_config import broker
 from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
-from scraping.reddit.scraper import RedditCustomScraper  # adjust import path
+from scraping.reddit import RedditCustomScraper  # adjust import path
 from scraping.reddit.scraper import ScrapeConfig
 import asyncpraw
 from common.date_range import DateRange
