@@ -217,12 +217,15 @@ class ScraperCoordinator:
 
                 scrape_configs = _choose_scrape_configs(scraper_id, self.config, now)
 
-                for config in scrape_configs:
-                    # Use .partial here to make sure the functions arguments are copied/stored
-                    # now rather than being lazily evaluated (if a lambda was used).
-                    # https://pylint.readthedocs.io/en/latest/user_guide/messages/warning/cell-var-from-loop.html#cell-var-from-loop-w0640
-                    bt.logging.trace(f"Adding scrape task for {scraper_id}: {config}.")
-                    self.queue.put_nowait(functools.partial(scraper.scrape, config))
+                if scraper_id == ScraperId.REDDIT_PARALLEL:
+                    for config in scrape_configs:
+                        # Use .partial here to make sure the functions arguments are copied/stored
+                        # now rather than being lazily evaluated (if a lambda was used).
+                        # https://pylint.readthedocs.io/en/latest/user_guide/messages/warning/cell-var-from-loop.html#cell-var-from-loop-w0640
+                        bt.logging.info(f"Adding scrape task for {scraper_id}: {config}.")
+                        self.queue.put_nowait(functools.partial(scraper.scrape_multiple, config))
+                else:
+                    self.queue.put_nowait(functools.partial(scraper.scrape, scrape_configs))
 
                 self.tracker.on_scrape_scheduled(scraper_id, now)
 
