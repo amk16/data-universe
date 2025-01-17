@@ -76,9 +76,13 @@ def _choose_scrape_configs(
     results = []
     for label_config in scraper_config.labels_to_scrape:
         # First, choose a label
-        labels_to_scrape = None
-        if label_config.label_choices:
-            labels_to_scrape = [random.choice(label_config.label_choices)]
+
+        if scraper_id == ScraperId.REDDIT_PARALLEL:
+            labels_to_scrape = label_config.label_choices
+        else:   
+            labels_to_scrape = None
+            if label_config.label_choices:
+                labels_to_scrape = [random.choice(label_config.label_choices)]
 
         # Now, choose a time bucket to scrape.
         current_bucket = TimeBucket.from_datetime(now)
@@ -97,13 +101,26 @@ def _choose_scrape_configs(
 
             chosen_bucket = TimeBucket(id=chosen_id)
 
-        results.append(
-            ScrapeConfig(
-                entity_limit=label_config.max_data_entities,
-                date_range=TimeBucket.to_date_range(chosen_bucket),
-                labels=labels_to_scrape,
+        if scraper_id == ScraperId.REDDIT_PARALLEL and labels_to_scrape:
+            subreddits = [label.value.replace('r/','') for label in labels_to_scrape]
+
+            date_range = TimeBucket.to_date_range(chosen_bucket)
+            results.append(
+                ScrapeConfig(
+                    entity_limit=label_config.max_data_entities,
+                    date_range=date_range,
+                    subreddits=subreddits,
+                )
             )
-        )
+        else:
+
+            results.append(
+                ScrapeConfig(
+                    entity_limit=label_config.max_data_entities,
+                    date_range=TimeBucket.to_date_range(chosen_bucket),
+                    labels=labels_to_scrape,
+                )
+            )
 
     return results
 
@@ -220,8 +237,18 @@ class ScraperCoordinator:
                 # Wait for a scraping task to be added to the queue.
                 scrape_fn = await self.queue.get()
 
+                if isinstance(scrape_fn.func, ParallelRedditScraper):
+                    config = scrape_fn.args[0] #Get the config from partial
+                    data_entities = await scrape_fn.func.scrape_multiple(
+                        subreddits=config.subreddits,
+                        entity_limit=config.entity_limit,
+                        date_range=config.date_range,
+                    )
+                else:
+                    data_entities = await scrape_fn()
+
                 # Perform the scrape
-                data_entities = await scrape_fn()
+
                 self.storage.store_data_entities(data_entities)
                 self.queue.task_done()
             except Exception as e:

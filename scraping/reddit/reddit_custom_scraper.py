@@ -34,6 +34,38 @@ class RedditCustomScraper(Scraper):
 
     USER_AGENT = f"User-Agent: python: {os.getenv('REDDIT_USERNAME')}"
 
+    @classmethod
+    async def _fetch_submissions(cls, reddit, subreddit, config: ScrapeConfig) -> List[RedditContent]:
+        """Fetch submissions for a subreddit based on config."""
+        search_sort = get_custom_sort_input(config.date_range.end)
+        search_time = get_time_input(config.date_range.end)
+        
+        submissions = None
+        match search_sort:
+            case "new":
+                submissions = subreddit.new(limit=config.entity_limit)
+            case "top":
+                submissions = subreddit.top(
+                    limit=config.entity_limit, 
+                    time_filter=search_time
+                )
+            case "hot":
+                submissions = subreddit.hot(limit=config.entity_limit)
+                
+        return [
+            cls._best_effort_parse_submission(submission)
+            async for submission in submissions
+        ]
+
+    @classmethod
+    async def _fetch_comments(cls, reddit, subreddit, config: ScrapeConfig) -> List[RedditContent]:
+        """Fetch comments for a subreddit based on config."""
+        comments = subreddit.comments(limit=config.entity_limit)
+        return [
+            cls._best_effort_parse_comment(comment)
+            async for comment in comments
+        ]
+
     async def validate(self, entities: List[DataEntity]) -> List[ValidationResult]:
         """Validate the correctness of a DataEntity by URI."""
         if not entities:
@@ -247,28 +279,12 @@ class RedditCustomScraper(Scraper):
                 subreddit = await reddit.subreddit(subreddit_name)
 
                 if fetch_submissions:
-                    submissions = None
-                    match search_sort:
-                        case "new":
-                            submissions = subreddit.new(limit=search_limit)
-                        case "top":
-                            submissions = subreddit.top(
-                                limit=search_limit, time_filter=search_time
-                            )
-                        case "hot":
-                            submissions = subreddit.hot(limit=search_limit)
-
-                    contents = [
-                        self._best_effort_parse_submission(submission)
-                        async for submission in submissions
-                    ]
+                    contents = await self._fetch_submissions(reddit, subreddit, scrape_config)
                 else:
-                    comments = subreddit.comments(limit=search_limit)
+                    contents = await self._fetch_comments(reddit, subreddit, scrape_config)
 
-                    contents = [
-                        self._best_effort_parse_comment(comment)
-                        async for comment in comments
-                    ]
+                return [RedditContent.to_data_entity(content) for content in contents if content]
+                
         except Exception:
             bt.logging.error(
                 f"Failed to scrape reddit using subreddit {subreddit_name}, limit {search_limit}, time {search_time}, sort {search_sort}: {traceback.format_exc()}."

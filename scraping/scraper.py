@@ -14,6 +14,7 @@ class ScraperId(str, Enum):
     REDDIT_LITE = "Reddit.lite"
     X_FLASH = "X.flash"
     REDDIT_CUSTOM = "Reddit.custom"
+    REDDIT_PARALLEL = "Reddit.parallel"
     X_MICROWORLDS = "X.microworlds"
     X_APIDOJO = "X.apidojo"
     X_QUACKER = "X.quacker"
@@ -62,6 +63,11 @@ class ScrapeConfig(StrictBaseModel):
     labels: Optional[List[DataLabel]] = Field(
         default=None,
         description="Optional labels to filter the scrape by. If none are provided, the data source will issue a scrape for 'all' data, without any label filters applied",
+    )
+    
+    subreddits: Optional[List[str]] = Field(
+        default=None,
+        description="List of subreddits for parallel scraping. Only used by the ParallelRedditScraper",
     )
 
 

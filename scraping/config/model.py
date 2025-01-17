@@ -10,7 +10,7 @@ in scraping/scraper.py. These classes are only intended to be used for deseriali
 the scraping_config JSON file.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field, PositiveInt, ConfigDict
 from common import constants
 from common.data import DataLabel, StrictBaseModel
@@ -25,7 +25,8 @@ class LabelScrapingConfig(StrictBaseModel):
 
     label_choices: Optional[List[str]] = Field(
         description="""The collection of labels to choose from when performing a scrape.
-        On a given scrape, 1 label will be chosen at random from this list.
+        For regular scrapers: 1 label will be chosen at random from this list.
+        For parallel scrapers: all labels will be used simultaneously.
         
         An empty list is treated as a non-existant label. In that case, no filter is applied when scraping data from this source.
         """
@@ -48,11 +49,16 @@ class LabelScrapingConfig(StrictBaseModel):
 
     def to_coordinator_label_scrape_config(self) -> coordinator.LabelScrapingConfig:
         """Returns the internal LabelScrapingConfig representation"""
-        labels = (
-            [DataLabel(value=val) for val in self.label_choices]
-            if self.label_choices
-            else None
-        )
+
+        if not self.label_choices:
+            return coordinator.LabelScrapingConfig(
+                label_choices=None,
+                max_age_hint_minutes=self.max_age_hint_minutes,
+                max_data_entities=self.max_data_entities,
+            )
+
+        labels = [DataLabel(value=val) for val in self.label_choices]
+
         return coordinator.LabelScrapingConfig(
             label_choices=labels,
             max_age_hint_minutes=self.max_age_hint_minutes,
@@ -75,15 +81,21 @@ class ScraperConfig(StrictBaseModel):
         description="""Describes the type of data to scrape from this source.
         
         The scraper will perform one scrape per entry in this list every 'cadence_seconds'.
+        For parallel scrapers, all labels in each entry will be processed simultaneously.
+        For regular scrapers, one label will be randomly selected from each entry.
         """
     )
 
     def to_coordinator_scraper_config(self) -> coordinator.ScraperConfig:
-        """Returns the internal ScraperConfig representation"""
+        """Returns the internal ScraperConfig representation
+        
+        For parallel scrapers (REDDIT_PARALLEL), all labels are processed simultaneously.
+        For regular scrapers, the existing random selection behavior is maintained.
+        """
         return coordinator.ScraperConfig(
             cadence_seconds=self.cadence_seconds,
             labels_to_scrape=[
-                label.to_coordinator_label_scrape_config()
+                label.to_coordinator_label_scrape_config(is_parallel=is_parallel)
                 for label in self.labels_to_scrape
             ],
         )
