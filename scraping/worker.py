@@ -3,7 +3,7 @@ import asyncio
 from reddit.redis_config import broker
 from reddit.parallel_reddit_scraper import scrape_subreddit  # Your task function
 import logging
-
+import signal
 
 logging.basicConfig(
     level=logging.INFO,
