@@ -66,7 +66,7 @@ class ParallelRedditScraper:
         self.max_concurrent = max_concurrent
 
 
-    def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
+    async def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
         bt.logging.info(f"Scraping of {subreddit} started")
         start_time = time.time()
         task = scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
@@ -75,7 +75,7 @@ class ParallelRedditScraper:
         bt.logging.info(f"Scraping of {subreddit} finished in {time.time() - start_time} seconds")
         return task_result.return_value
 
-    def scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
+    async def scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
         bt.logging.info(f"Starting scrape of {subreddit}")
 
         try:
