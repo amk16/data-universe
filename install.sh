@@ -6,6 +6,7 @@ SCRAPING_LOG_FILE="/workspace/data-universe/logs/scraping.log"
 
 ######## MAKE LOG FILE ########
 echo 'making log file'
+mkdir /workspace/data-universe/logs
 touch "$SCRAPING_LOG_FILE"
 
 
