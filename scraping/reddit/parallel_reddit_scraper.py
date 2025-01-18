@@ -10,7 +10,12 @@ from common.data import DataLabel, DataEntity
 import os
 import random
 import bittensor as bt
+import time
+from taskiq import TaskiqResultTimeoutError
 
+
+# Potential improvements:
+# Circulate between reddit accounts for scraping to mitigate rate limiting
 
 
 
@@ -20,6 +25,9 @@ class ScrapingTask:
     entity_limit: int
     date_range: DateRange
     fetch_submissions: bool = True
+
+
+broker = broker
 
 @broker.task
 async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
@@ -56,6 +64,30 @@ class ParallelRedditScraper:
     
     def __init__(self, max_concurrent: int = 5):
         self.max_concurrent = max_concurrent
+
+
+    def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
+        bt.logging.info(f"Scraping of {subreddit} started")
+        start_time = time.time()
+        task = scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
+        task_result = await task.wait_result(timeout=timeout)
+
+        bt.logging.info(f"Scraping of {subreddit} finished in {time.time() - start_time} seconds")
+        return task_result.return_value
+
+    def scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
+        bt.logging.info(f"Starting scrape of {subreddit}")
+
+        try:
+            return await asyncio.wait_for(self._scrape_one(subreddit, entity_limit, date_range, fetch_submissions, timeout-1), timeout)
+        
+        except (asyncio.TimeoutError, TaskiqResultTimeoutError):
+            bt.logging.error(f"Timeout ({timeout-1}) exceeded for {subreddit}")
+        
+        except Exception as e:
+            bt.logging.error(f"Error during scraping of {subreddit}: {str(e)}")
+        
+        return []
         
     async def scrape_multiple(
         self,
@@ -67,30 +99,20 @@ class ParallelRedditScraper:
         Scrape multiple subreddits in parallel using Redis tasks.
         """
         try:
-            tasks = []
-            for subreddit in subreddits:
-                fetch_submissions = bool(random.getrandbits(1))
+            #A list of lists of Subreddit scraping results
+            scraping_results = [
+                result for result in await asyncio.gather(*[
+                    self.scrape_one(subreddit,entity_limit,date_range,fetch_submissions,50)
+                    for subreddit in subreddits
+                ])
+            ]
             
-                task = ScrapingTask(
-                    subreddit=subreddit,
-                    entity_limit=entity_limit,
-                    date_range=date_range,
-                    fetch_submissions=fetch_submissions
-                )
-                tasks.append(scrape_subreddit.kiq(task))
-            
-            results = []
-            for batch in self._batch_tasks(tasks, self.max_concurrent):
-                batch_results = await asyncio.gather(*batch, return_exceptions=True)
 
-            for result in batch_results:
-                if isinstance(result, Exception):
-                    bt.logging.error(f"Error during scraping: {result}")
-                    continue
-                
-                results.extend(result)
             
-            return results
+                
+                
+            
+            return scraping_results
         except Exception as e:
             bt.logging.error(f"batch scraping failed: {str(e)}")
             return []

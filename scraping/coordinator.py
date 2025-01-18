@@ -248,7 +248,7 @@ class ScraperCoordinator:
                         date_range=config.date_range,
                     )
                 else:
-                    data_entities = await scrape_fn()
+                    bt.logging.info(f"Scraping {scraper_id} with config: {scrape_fn.args[0]}")
 
                 # Perform the scrape
 
