@@ -1,11 +1,14 @@
 
+
+SCRAPING_LOG_FILE="/workspace/data-universe/logs/scraping.log"
 ######## Add redis repo ########
-curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-ret=$?
-if [[ $ret -ne 0 ]]; then
-    echo "failed to add redis repo." | tee -a "$INSTALL_LOG"
-fi
-echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list
+
+sudo apt-get install lsb-release curl gpg
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+sudo chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+sudo apt-get update
+sudo apt-get install redis
 
 
 ####### Ubuntu packages ########
@@ -19,7 +22,7 @@ npm install -g pm2
 
 ######## Install python packages ########
 echo 'installing python packages'
-python -m pip install -e.
+python -m pip install -e .
 
 
 ######## Parallelization setup ########
