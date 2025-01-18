@@ -1,6 +1,14 @@
 
 
 SCRAPING_LOG_FILE="/workspace/data-universe/logs/scraping.log"
+
+
+
+######## MAKE LOG FILE ########
+echo 'making log file'
+touch "$SCRAPING_LOG_FILE"
+
+
 ######## Add redis repo ########
 
 sudo apt-get install lsb-release curl gpg
@@ -25,12 +33,22 @@ echo 'installing python packages'
 python -m pip install -e .
 
 
+
+######## Verify installation ########
+echo 'checking if module is importable'
+python -c "from scraping.reddit.redis_config import broker; print('Module found')"
+
+
 ######## Parallelization setup ########
 echo 'starting redis-server'
 redis-server --daemonize yes
 
+
+echo 'checking redis-server'
+redis-cli ping
+
 echo 'starting taskiq worker'
-nohup taskiq worker scraping.reddit.parallel_reddit_scraper:broker -- workers 10 --max-async-tasks 1 >> "$DOWNLOAD_LOG_FILE" 2>&1 &
+nohup taskiq worker scraping.reddit.redis_config:broker -- workers 10 --max-async-tasks 1 >> "$SCRAPING_LOG_FILE" 2>&1 &
 
 
 
