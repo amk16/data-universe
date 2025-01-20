@@ -249,8 +249,7 @@ class ScraperCoordinator:
                     )
                 else:
                     bt.logging.info(f"Scraping twitter with config: {scrape_fn.args[0]}")
-
-                # Perform the scrape
+                    data_entities = await scrape_fn()
 
                 self.storage.store_data_entities(data_entities)
                 self.queue.task_done()
