@@ -245,8 +245,10 @@ class ScraperCoordinator:
                 # Wait for a scraping task to be added to the queue.
                 scrape_fn = await self.queue.get()
                 bt.logging.info(f"Scraping task: {scrape_fn.func}")
+                bt.logging.info(isinstance(scrape_fn.func, ParallelRedditScraper))
 
                 if isinstance(scrape_fn.func, ParallelRedditScraper):
+                    bt.logging.info(f"Scraping reddit with config: {scrape_fn.args[0]}")
                     config = scrape_fn.args[0] #Get the config from partial
                     data_entities = await scrape_fn.func.scrape_multiple(
                         subreddits=config.subreddits,
