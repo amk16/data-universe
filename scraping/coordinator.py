@@ -237,7 +237,10 @@ class ScraperCoordinator:
 
     async def _worker(self, name):
         """A worker thread"""
+
+
         while self.is_running:
+
             try:
                 # Wait for a scraping task to be added to the queue.
                 scrape_fn = await self.queue.get()
@@ -252,8 +255,8 @@ class ScraperCoordinator:
                 # else:
                 #     bt.logging.info(f"Scraping twitter with config: {scrape_fn.args[0]}")
                 #     data_entities = await scrape_fn()
-                bt.logging.info(f"data_entities: {data_entities}")
-                self.storage.store_data_entities(data_entities)
+                    bt.logging.info(f"data_entities: {data_entities}")
+                    self.storage.store_data_entities(data_entities)
                 self.queue.task_done()
             except Exception as e:
                 bt.logging.error("Worker " + name + ": " + traceback.format_exc())

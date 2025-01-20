@@ -32,6 +32,7 @@ broker = broker
 @broker.task
 async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
     """Scrape a single subreddit for either submissions or comments."""
+    bt.logging.info(f"Scraping subreddit {task.subreddit}")
     try:
         async with asyncpraw.Reddit(
             client_id=os.getenv("REDDIT_CLIENT_ID"),
