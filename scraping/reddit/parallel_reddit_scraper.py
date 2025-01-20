@@ -70,11 +70,15 @@ class ParallelRedditScraper:
 
 
     async def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
+
         bt.logging.info(f"Scraping of {subreddit} started")
         start_time = time.time()
 
+        bt.logging.info(f"Broker status: {broker.is_connected()}")
+
         task = await scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
         bt.logging.info(f"Task created for {subreddit}")
+
         task_result = await task.wait_result(timeout=timeout)
         bt.logging.info(f"Task result for {subreddit}: {task_result}")
 
