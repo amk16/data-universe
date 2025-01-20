@@ -50,8 +50,10 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
             )
             
             if task.fetch_submissions:
+                bt.logging.info(f"Fetching submissions for {task.subreddit}")
                 contents = await RedditCustomScraper._fetch_submissions(reddit, subreddit, config)
             else:
+                bt.logging.info(f"Fetching comments for {task.subreddit}")
                 contents = await RedditCustomScraper._fetch_comments(reddit, subreddit, config)
                 
             return [RedditContent.to_data_entity(content) for content in contents if content]
@@ -72,8 +74,9 @@ class ParallelRedditScraper:
         start_time = time.time()
 
         task = await scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
-
+        bt.logging.info(f"Task created for {subreddit}")
         task_result = await task.wait_result(timeout=timeout)
+        bt.logging.info(f"Task result for {subreddit}: {task_result}")
 
         bt.logging.info(f"Scraping of {subreddit} finished in {time.time() - start_time} seconds")
         return task_result.return_value
@@ -107,7 +110,7 @@ class ParallelRedditScraper:
             #A list of lists of Subreddit scraping results
             scraping_results = [
                 result for result in await asyncio.gather(*[
-                    self.scrape_one(subreddit,entity_limit,date_range,fetch_submissions,300)
+                    self.scrape_one(subreddit,entity_limit,date_range,fetch_submissions,1200)
                     for subreddit in subreddits
                 ])
             ]
