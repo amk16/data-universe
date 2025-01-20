@@ -28,7 +28,6 @@ class ScrapingTask:
     fetch_submissions: bool = True
 
 
-broker = broker
 
 @broker.task
 async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
@@ -71,7 +70,9 @@ class ParallelRedditScraper:
     async def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
         bt.logging.info(f"Scraping of {subreddit} started")
         start_time = time.time()
-        task = scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
+        
+        task = await scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
+
         task_result = await task.wait_result(timeout=timeout)
 
         bt.logging.info(f"Scraping of {subreddit} finished in {time.time() - start_time} seconds")
