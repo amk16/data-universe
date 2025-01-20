@@ -70,7 +70,7 @@ class ParallelRedditScraper:
     async def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
         bt.logging.info(f"Scraping of {subreddit} started")
         start_time = time.time()
-        
+
         task = await scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
 
         task_result = await task.wait_result(timeout=timeout)
@@ -107,7 +107,7 @@ class ParallelRedditScraper:
             #A list of lists of Subreddit scraping results
             scraping_results = [
                 result for result in await asyncio.gather(*[
-                    self.scrape_one(subreddit,entity_limit,date_range,fetch_submissions,50)
+                    self.scrape_one(subreddit,entity_limit,date_range,fetch_submissions,300)
                     for subreddit in subreddits
                 ])
             ]
