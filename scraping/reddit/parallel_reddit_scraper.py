@@ -15,6 +15,13 @@ import random
 import bittensor as bt
 import time
 import random
+from dotenv import load_dotenv
+
+
+
+load_dotenv()
+
+
 
 # Potential improvements:
 # Circulate between reddit accounts for scraping to mitigate rate limiting

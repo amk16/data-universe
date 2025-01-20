@@ -53,7 +53,7 @@ class RedditCustomScraper(Scraper):
                 submissions = subreddit.hot(limit=config.entity_limit)
                 
         return [
-            cls._best_effort_parse_submission(submission)
+            await cls._best_effort_parse_submission(submission)
             async for submission in submissions
         ]
 
@@ -62,7 +62,7 @@ class RedditCustomScraper(Scraper):
         """Fetch comments for a subreddit based on config."""
         comments = subreddit.comments(limit=config.entity_limit)
         return [
-            cls._best_effort_parse_comment(comment)
+            await cls._best_effort_parse_comment(comment)
             async for comment in comments
         ]
 
