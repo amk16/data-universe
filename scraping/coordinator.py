@@ -225,7 +225,9 @@ class ScraperCoordinator:
                         bt.logging.info(f"Adding scrape task for {scraper_id}: {config}.")
                         self.queue.put_nowait(functools.partial(scraper.scrape_multiple, config))
                 else:
-                    self.queue.put_nowait(functools.partial(scraper.scrape, scrape_configs))
+                    #self.queue.put_nowait(functools.partial(scraper.scrape, scrape_configs))
+                    # todo change this once the twitter scraper is implemented
+                    bt.logging.info(f"Scraping twitter attempt")
 
                 self.tracker.on_scrape_scheduled(scraper_id, now)
 
@@ -247,10 +249,10 @@ class ScraperCoordinator:
                         entity_limit=config.entity_limit,
                         date_range=config.date_range,
                     )
-                else:
-                    bt.logging.info(f"Scraping twitter with config: {scrape_fn.args[0]}")
-                    data_entities = await scrape_fn()
-
+                # else:
+                #     bt.logging.info(f"Scraping twitter with config: {scrape_fn.args[0]}")
+                #     data_entities = await scrape_fn()
+                bt.logging.info(f"data_entities: {data_entities}")
                 self.storage.store_data_entities(data_entities)
                 self.queue.task_done()
             except Exception as e:
