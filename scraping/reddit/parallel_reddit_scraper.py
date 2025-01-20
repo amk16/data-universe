@@ -1,4 +1,4 @@
-from scraping.reddit.redis_config import broker
+from scraping.reddit.redis_config import broker, get_queue_length
 from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
@@ -13,7 +13,6 @@ import bittensor as bt
 import time
 from taskiq import TaskiqResultTimeoutError
 import random
-
 
 # Potential improvements:
 # Circulate between reddit accounts for scraping to mitigate rate limiting
@@ -78,6 +77,9 @@ class ParallelRedditScraper:
 
         task = await scrape_subreddit.kiq(ScrapingTask(subreddit=subreddit, entity_limit=entity_limit, date_range=date_range, fetch_submissions=fetch_submissions))
         bt.logging.info(f"Task created for {subreddit}")
+
+        queue_length = await get_queue_length(broker)
+        bt.logging.info(f"Queue length: {queue_length}")
 
         task_result = await task.wait_result(timeout=timeout)
         bt.logging.info(f"Task result for {subreddit}: {task_result}")

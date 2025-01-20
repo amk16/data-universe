@@ -2,7 +2,7 @@
 import os
 from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 from taskiq import TaskiqEvents, TaskiqScheduler
-
+from aioredis import Redis
 
 # Redis connection configuration
 REDIS_CONFIG = {
@@ -42,6 +42,26 @@ async def check_redis_connection():
     except Exception as e:
         print(f"Redis connection failed: {e}")
         return False
+
+
+
+
+async def get_queue_length(broker) -> int:
+    """
+    Get the current length of the reddit_scraper queue from Redis.
+    
+    Args:
+        broker: The broker instance containing the Redis connection pool
+        
+    Returns:
+        int: The current length of the queue
+    """
+    async with Redis(connection_pool=broker.connection_pool) as redis_conn:
+        queue_length = await redis_conn.llen("reddit_scraper")
+        bt.logging.info(f"Current queue length: {queue_length}")
+        return queue_length
+
+
         
 # Create broker instance
 
