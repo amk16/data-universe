@@ -248,7 +248,7 @@ class ScraperCoordinator:
                         date_range=config.date_range,
                     )
                 else:
-                    bt.logging.info(f"Scraping {scraper_id} with config: {scrape_fn.args[0]}")
+                    bt.logging.info(f"Scraping twitter with config: {scrape_fn.args[0]}")
 
                 # Perform the scrape
 
