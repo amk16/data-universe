@@ -51,6 +51,8 @@ class RedditCustomScraper(Scraper):
                 )
             case "hot":
                 submissions = await subreddit.hot(limit=config.entity_limit)
+
+        bt.logging.info(f"Submissions: {submissions}")
                 
         return [
             cls._best_effort_parse_submission(submission)
