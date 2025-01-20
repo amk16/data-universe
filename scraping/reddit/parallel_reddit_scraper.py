@@ -1,4 +1,7 @@
-from scraping.reddit.redis_config import broker, get_queue_length
+from scraping.reddit.redis_config import get_queue_length
+from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
+from taskiq import TaskiqResultTimeoutError, TaskiqEvents, TaskiqScheduler
+from aioredis import Redis
 from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
@@ -11,12 +14,21 @@ import os
 import random
 import bittensor as bt
 import time
-from taskiq import TaskiqResultTimeoutError
 import random
 
 # Potential improvements:
 # Circulate between reddit accounts for scraping to mitigate rate limiting
 
+BASE_REDIS = os.getenv("BASE_REDIS", "redis://localhost:6379")
+
+redis_async_result = RedisAsyncResultBackend(redis_url=f"{BASE_REDIS}/0")
+
+broker = ListQueueBroker(
+    url=f"{BASE_REDIS}/0",
+    queue_name="reddit_scraper",
+    result_backend=redis_async_result
+    
+)
 
 
 @dataclass
@@ -28,7 +40,7 @@ class ScrapingTask:
 
 
 
-@broker.task()
+@broker.task
 async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
     """Scrape a single subreddit for either submissions or comments."""
     bt.logging.info(f"Scraping subreddit {task.subreddit}")
