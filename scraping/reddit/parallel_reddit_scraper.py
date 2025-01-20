@@ -12,6 +12,7 @@ import random
 import bittensor as bt
 import time
 from taskiq import TaskiqResultTimeoutError
+import random
 
 
 # Potential improvements:
@@ -99,7 +100,9 @@ class ParallelRedditScraper:
         """
         Scrape multiple subreddits in parallel using Redis tasks.
         """
+        fetch_submissions = bool(random.getrandbits(1))
         try:
+            bt.logging.info(f"Scraping {subreddits} with config: {entity_limit}, {date_range}")
             #A list of lists of Subreddit scraping results
             scraping_results = [
                 result for result in await asyncio.gather(*[
@@ -107,11 +110,6 @@ class ParallelRedditScraper:
                     for subreddit in subreddits
                 ])
             ]
-            
-
-            
-                
-                
             
             return scraping_results
         except Exception as e:
