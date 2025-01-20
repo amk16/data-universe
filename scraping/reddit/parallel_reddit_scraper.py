@@ -28,7 +28,7 @@ class ScrapingTask:
 
 
 
-@broker.task
+@broker.task()
 async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
     """Scrape a single subreddit for either submissions or comments."""
     bt.logging.info(f"Scraping subreddit {task.subreddit}")
