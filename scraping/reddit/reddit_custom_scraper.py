@@ -43,17 +43,17 @@ class RedditCustomScraper(Scraper):
         submissions = None
         match search_sort:
             case "new":
-                submissions = subreddit.new(limit=config.entity_limit)
+                submissions = await subreddit.new(limit=config.entity_limit)
             case "top":
-                submissions = subreddit.top(
+                submissions = await subreddit.top(
                     limit=config.entity_limit, 
                     time_filter=search_time
                 )
             case "hot":
-                submissions = subreddit.hot(limit=config.entity_limit)
+                submissions = await subreddit.hot(limit=config.entity_limit)
                 
         return [
-            await cls._best_effort_parse_submission(submission)
+            cls._best_effort_parse_submission(submission)
             async for submission in submissions
         ]
 
@@ -62,7 +62,7 @@ class RedditCustomScraper(Scraper):
         """Fetch comments for a subreddit based on config."""
         comments = subreddit.comments(limit=config.entity_limit)
         return [
-            await cls._best_effort_parse_comment(comment)
+            cls._best_effort_parse_comment(comment)
             async for comment in comments
         ]
 
