@@ -250,7 +250,7 @@ class ScraperCoordinator:
                 if isinstance(scrape_fn.func.__self__, ParallelRedditScraper):
                     bt.logging.info(f"Scraping reddit with config: {scrape_fn.args[0]}")
                     config = scrape_fn.args[0] #Get the config from partial
-                    data_entities = await scrape_fn.func.scrape_multiple(
+                    data_entities = await scrape_fn.func(
                         subreddits=config.subreddits,
                         entity_limit=config.entity_limit,
                         date_range=config.date_range,
