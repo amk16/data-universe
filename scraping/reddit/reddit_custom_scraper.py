@@ -43,14 +43,14 @@ class RedditCustomScraper(Scraper):
         submissions = None
         match search_sort:
             case "new":
-                submissions = await subreddit.new(limit=config.entity_limit)
+                submissions = subreddit.new(limit=config.entity_limit)
             case "top":
-                submissions = await subreddit.top(
+                submissions = subreddit.top(
                     limit=config.entity_limit, 
                     time_filter=search_time
                 )
             case "hot":
-                submissions = await subreddit.hot(limit=config.entity_limit)
+                submissions = subreddit.hot(limit=config.entity_limit)
 
         bt.logging.info(f"Submissions: {submissions}")
                 
