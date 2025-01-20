@@ -32,6 +32,8 @@ npm install -g pm2
 ######## Install python packages ########
 echo 'installing python packages'
 python -m pip install -e .
+python -m pip install taskiq-redis
+python -m pip install taskiq
 
 
 
