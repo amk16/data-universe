@@ -49,7 +49,7 @@ class ScrapingTask:
 @broker.task
 async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
     """Scrape a single subreddit for either submissions or comments."""
-    bt.logging.info(f"Scraping subreddit {task.subreddit}")
+    bt.logging.error(f"Scraping subreddit {task.subreddit}")
     try:
         async with asyncpraw.Reddit(
             client_id=os.getenv("REDDIT_CLIENT_ID"),
@@ -69,9 +69,11 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
             if task.fetch_submissions:
                 bt.logging.info(f"Fetching submissions for {task.subreddit}")
                 contents = await RedditCustomScraper._fetch_submissions(reddit, subreddit, config)
+                bt.logging.error(contents)
             else:
                 bt.logging.info(f"Fetching comments for {task.subreddit}")
                 contents = await RedditCustomScraper._fetch_comments(reddit, subreddit, config)
+                bt.logging.error(contents)
                 
             return [RedditContent.to_data_entity(content) for content in contents if content]
             

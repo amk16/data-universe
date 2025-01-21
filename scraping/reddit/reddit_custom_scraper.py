@@ -53,11 +53,14 @@ class RedditCustomScraper(Scraper):
                 submissions = subreddit.hot(limit=config.entity_limit)
 
         bt.logging.info(f"Submissions: {submissions}")
-                
-        return [
-            cls._best_effort_parse_submission(submission)
-            async for submission in submissions
-        ]
+        
+        if submissions:
+            return [
+                cls._best_effort_parse_submission(submission)
+                async for submission in submissions
+            ]
+        else:
+            return f"Submission:{submissions}, sort: {search_sort}"
 
     @classmethod
     async def _fetch_comments(cls, reddit, subreddit, config: ScrapeConfig) -> List[RedditContent]:
