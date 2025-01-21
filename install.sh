@@ -35,6 +35,7 @@ echo 'installing python packages'
 python -m pip install -e .
 python -m pip install taskiq-redis
 python -m pip install taskiq
+python -m pip install aioredis
 
 
 
