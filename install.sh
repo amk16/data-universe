@@ -7,6 +7,7 @@ SCRAPING_LOG_FILE="/workspace/data-universe/logs/scraping.log"
 ######## MAKE LOG FILE ########
 echo 'making log file'
 mkdir /workspace/data-universe/logs
+
 touch "$SCRAPING_LOG_FILE"
 
 
@@ -51,7 +52,7 @@ echo 'checking redis-server'
 redis-cli ping
 
 echo 'starting taskiq worker'
-nohup python -m taskiq worker scraping.reddit.redis_config:broker -- workers 10 --max-async-tasks 1 >> "$SCRAPING_LOG_FILE" 2>&1 &
+nohup taskiq worker scraping.reddit.redis_config:broker -- workers 10 --max-async-tasks 1 >> "$SCRAPING_LOG_FILE" 2>&1 &
 
 
 
