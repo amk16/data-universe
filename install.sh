@@ -53,7 +53,7 @@ echo 'checking redis-server'
 redis-cli ping
 
 echo 'starting taskiq worker'
-nohup taskiq worker scraping.reddit.redis_config:broker -- workers 10 --max-async-tasks 1 >> "$SCRAPING_LOG_FILE" 2>&1 &
+nohup taskiq worker scraping.reddit.parallel_reddit_scraper:broker -- workers 10 --max-async-tasks 1 >> "$SCRAPING_LOG_FILE" 2>&1 &
 
 
 
