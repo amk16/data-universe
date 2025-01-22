@@ -152,6 +152,8 @@ class ParallelRedditScraper:
                     for subreddit in subreddits
                 ])
             ]
+
+            bt.logging.info(f"Scraping results type of content {type(scraping_results[0][0])}")
             
             return scraping_results
         except Exception as e:
