@@ -34,7 +34,7 @@ class RedditCustomScraper(Scraper):
 
     USER_AGENT = f"User-Agent: python: {os.getenv('REDDIT_USERNAME')}"
 
-    @classmethod
+    
     async def _fetch_submissions(cls, reddit, subreddit, config: ScrapeConfig) -> List[RedditContent]:
         """Fetch submissions for a subreddit based on config."""
         search_sort = get_custom_sort_input(config.date_range.end)
@@ -56,18 +56,18 @@ class RedditCustomScraper(Scraper):
         
         if submissions:
             return [
-                cls._best_effort_parse_submission(submission)
+                _best_effort_parse_submission(submission)
                 async for submission in submissions
             ]
         else:
             return f"Submission:{submissions}, sort: {search_sort}"
 
-    @classmethod
+    
     async def _fetch_comments(cls, reddit, subreddit, config: ScrapeConfig) -> List[RedditContent]:
         """Fetch comments for a subreddit based on config."""
         comments = subreddit.comments(limit=config.entity_limit)
         return [
-            cls._best_effort_parse_comment(comment)
+            _best_effort_parse_comment(comment)
             async for comment in comments
         ]
 
