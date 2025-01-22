@@ -81,7 +81,7 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
             data_entities = []
 
             for content in contents:
-                converted_content = Reddit.to_data_entity(content)
+                converted_content = RedditContent.to_data_entity(content)
                 bt.logging.error(f"type of this converted content is {type(converted_content)}")
                 bt.logging.error(f'converting content to data_entity:{converted_content}')
                 data_entities.append(converted_content)
