@@ -77,6 +77,15 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
                 bt.logging.info(f"Fetching comments for {task.subreddit}")
                 contents = await scraper._fetch_comments(reddit, subreddit, config)
                 bt.logging.error(f"contents of fetch comments:{contents}")
+
+            data_entities = []
+
+            for content in contents:
+                converted_content = Reddit.to_data_entity(content)
+                bt.logging.error(f"type of this converted content is {type(converted_content)}")
+                bt.logging.error(f'converting content to data_entity:{converted_content}')
+                data_entities.append(converted_content)
+                
                 
             return [RedditContent.to_data_entity(content) for content in contents if content]
             
