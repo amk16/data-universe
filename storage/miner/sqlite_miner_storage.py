@@ -152,12 +152,13 @@ class SqliteMinerStorage(MinerStorage):
 
             connection.commit()
 
-    def store_data_entities(self, data_entities: List[DataEntity]):
+    def store_data_entities(self, data_entities: List[List[DataEntity]]):
         """Stores any number of DataEntities, making space if necessary."""
 
         added_content_size = 0
-        for data_entity in data_entities:
-            added_content_size += data_entity.content_size_bytes
+        for data_entity_list in data_entities:
+            for data_entity in data_entity_list:
+                added_content_size += data_entity.content_size_bytes
 
         # If the total size of the store is larger than our maximum configured stored content size then ecept.
         if added_content_size > self.database_max_content_size_bytes:
@@ -194,22 +195,23 @@ class SqliteMinerStorage(MinerStorage):
             # Parse every DataEntity into an list of value lists for inserting.
             values = []
 
-            for data_entity in data_entities:
-                label = (
-                    "NULL" if (data_entity.label is None) else data_entity.label.value
-                )
-                time_bucket_id = TimeBucket.from_datetime(data_entity.datetime).id
-                values.append(
-                    [
-                        data_entity.uri,
-                        data_entity.datetime,
-                        time_bucket_id,
-                        data_entity.source,
-                        label,
-                        data_entity.content,
-                        data_entity.content_size_bytes,
-                    ]
-                )
+            for data_entity_list in data_entities:
+                for data_entity in data_entity_list:
+                    label = (
+                        "NULL" if (data_entity.label is None) else data_entity.label.value
+                    )
+                    time_bucket_id = TimeBucket.from_datetime(data_entity.datetime).id
+                    values.append(
+                        [
+                            data_entity.uri,
+                            data_entity.datetime,
+                            time_bucket_id,
+                            data_entity.source,
+                            label,
+                            data_entity.content,
+                            data_entity.content_size_bytes,
+                        ]
+                    )
 
             # Insert overwriting duplicate keys (in case of updated content).
             cursor.executemany("REPLACE INTO DataEntity VALUES (?,?,?,?,?,?,?)", values)
