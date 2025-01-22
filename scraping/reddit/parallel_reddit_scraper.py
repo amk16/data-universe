@@ -87,7 +87,7 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
                 data_entities.append(converted_content)
                 
                 
-            return [RedditContent.to_data_entity(content) for content in contents if content]
+            return data_entities
             
     except Exception as e:
         bt.logging.error(f"Failed to scrape subreddit {task.subreddit}: {str(e)}")
