@@ -258,7 +258,7 @@ class ScraperCoordinator:
                 # else:
                 #     bt.logging.info(f"Scraping twitter with config: {scrape_fn.args[0]}")
                 #     data_entities = await scrape_fn()
-                    bt.logging.info(f"type of data_entities variable is: {type(data_entities)}")
+                    bt.logging.info(f"type of data_entities variable is: {type(data_entities[0])}")
                     bt.logging.info(f"data_entities: {data_entities}")
                     self.storage.store_data_entities(data_entities)
                 self.queue.task_done()
