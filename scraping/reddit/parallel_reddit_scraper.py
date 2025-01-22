@@ -69,11 +69,11 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
             if task.fetch_submissions:
                 bt.logging.info(f"Fetching submissions for {task.subreddit}")
                 contents = await RedditCustomScraper._fetch_submissions(reddit, subreddit, config)
-                bt.logging.error(contents)
+                bt.logging.error(f"contents of fetch submissions:{contents}")
             else:
                 bt.logging.info(f"Fetching comments for {task.subreddit}")
                 contents = await RedditCustomScraper._fetch_comments(reddit, subreddit, config)
-                bt.logging.error(contents)
+                bt.logging.error(f"contents of fetch comments:{contents}")
                 
             return [RedditContent.to_data_entity(content) for content in contents if content]
             
