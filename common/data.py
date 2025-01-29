@@ -134,43 +134,46 @@ class DataEntity(StrictBaseModel):
 
 class DataEntityFormatter(TaskiqFormatter):
     def dumps(self, message: TaskiqMessage) -> BrokerMessage:
-        if isinstance(message.args[0], DataEntity):
-            data_entity = message.args[0]
-            # Convert DataEntity to dict format
-            data = {
-                'uri': data_entity.uri,
-                'datetime': data_entity.datetime.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                'source': data_entity.source,
-                'label': {'value': data_entity.label.value} if data_entity.label else None,
-                'content': data_entity.content.decode('utf-8') if isinstance(data_entity.content, bytes) else data_entity.content,
-                'content_size_bytes': data_entity.content_size_bytes
-            }
-            message.args = (data,)
-        
-        return BrokerMessage(
-            body=json.dumps(message.__dict__).encode()
-        )
+        bt.logging.info(f"Dumping message type: {type(message)}")
+        bt.logging.info(f"Message content: {message}")
+        try:
+            if isinstance(message.args[0], DataEntity):
+                data_entity = message.args[0]
+                # Convert DataEntity to dict format
+                data = {
+                    'uri': data_entity.uri,
+                    'datetime': data_entity.datetime.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    'source': data_entity.source,
+                    'label': {'value': data_entity.label.value} if data_entity.label else None,
+                    'content': data_entity.content.decode('utf-8') if isinstance(data_entity.content, bytes) else data_entity.content,
+                    'content_size_bytes': data_entity.content_size_bytes
+                }
+                message.args = (data,)
+            
+            result = BrokerMessage(
+                body=json.dumps(message.__dict__).encode()
+            )
+            bt.logging.info("Successfully dumped message")
+            return result
+        except Exception as e:
+            bt.logging.error(f"Error in dumps: {str(e)}")
+            raise
 
     def loads(self, message: bytes) -> TaskiqMessage:
-        data = json.loads(message.decode())
-        if isinstance(data.get('args', [None])[0], dict) and 'uri' in data['args'][0]:
-            entity_data = data['args'][0]
-            # Convert back to DataEntity format
-            entity_data['datetime'] = dt.datetime.strptime(
-                entity_data['datetime'], 
-                '%Y-%m-%dT%H:%M:%SZ'
-            ).replace(tzinfo=dt.timezone.utc)
+        bt.logging.info("Loading message")
+        try:
+            data = json.loads(message.decode())
+            bt.logging.info(f"Decoded message: {data}")
             
-            if isinstance(entity_data['content'], str):
-                entity_data['content'] = entity_data['content'].encode('utf-8')
+            if isinstance(data.get('args', [None])[0], dict) and 'uri' in data['args'][0]:
+                entity_data = data['args'][0]
+                # Rest of the conversion logic...
             
-            if entity_data['label']:
-                entity_data['label'] = DataLabel(entity_data['label']['value'])
-                
-            data['args'] = (DataEntity.model_validate(entity_data),)
-            
-        return TaskiqMessage(**data)
-
+            return TaskiqMessage(**data)
+        except Exception as e:
+            bt.logging.error(f"Error in loads: {str(e)}")
+            raise
+        
 
 class HuggingFaceMetadata(StrictBaseModel):
     repo_name: str
