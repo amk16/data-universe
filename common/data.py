@@ -1,5 +1,6 @@
 import dataclasses
-from taskiq.serializers import JSONSerializer
+from taskiq.message import BrokerMessage, TaskiqMessage
+from taskiq.formatter import TaskiqFormatter
 import time
 from typing import Any
 import json
@@ -131,41 +132,44 @@ class DataEntity(StrictBaseModel):
         )
 
 
-class DataEntitySerializer(JSONSerializer):
-    def dumps(self, message: Any) -> bytes:
-        if isinstance(message, DataEntity):
-            data = message.model_dump()
-            # Convert datetime to ISO format with 'Z'
-            data['datetime'] = data['datetime'].strftime('%Y-%m-%dT%H:%M:%SZ')
-            # Keep content as string if it's JSON
-            if isinstance(data['content'], bytes):
-                data['content'] = data['content'].decode('utf-8')
-            # Handle label
-            if data['label']:
-                data['label'] = {'value': data['label'].value}
-            return json.dumps(data).encode()
-        return super().dumps(message)
-    
-    def loads(self, message: bytes) -> Any:
-        data = super().loads(message)
-        if isinstance(data, dict) and 'uri' in data:
-            # Convert datetime string back
-            data['datetime'] = dt.datetime.strptime(
-                data['datetime'], 
+class DataEntityFormatter(TaskiqFormatter):
+    def dumps(self, message: TaskiqMessage) -> BrokerMessage:
+        if isinstance(message.args[0], DataEntity):
+            data_entity = message.args[0]
+            # Convert DataEntity to dict format
+            data = {
+                'uri': data_entity.uri,
+                'datetime': data_entity.datetime.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'source': data_entity.source,
+                'label': {'value': data_entity.label.value} if data_entity.label else None,
+                'content': data_entity.content.decode('utf-8') if isinstance(data_entity.content, bytes) else data_entity.content,
+                'content_size_bytes': data_entity.content_size_bytes
+            }
+            message.args = (data,)
+        
+        return BrokerMessage(
+            body=json.dumps(message.__dict__).encode()
+        )
+
+    def loads(self, message: bytes) -> TaskiqMessage:
+        data = json.loads(message.decode())
+        if isinstance(data.get('args', [None])[0], dict) and 'uri' in data['args'][0]:
+            entity_data = data['args'][0]
+            # Convert back to DataEntity format
+            entity_data['datetime'] = dt.datetime.strptime(
+                entity_data['datetime'], 
                 '%Y-%m-%dT%H:%M:%SZ'
             ).replace(tzinfo=dt.timezone.utc)
             
-            # Convert content to bytes if it's a string
-            if isinstance(data['content'], str):
-                data['content'] = data['content'].encode('utf-8')
+            if isinstance(entity_data['content'], str):
+                entity_data['content'] = entity_data['content'].encode('utf-8')
             
-            # Handle label reconstruction
-            if data['label']:
-                data['label'] = DataLabel(data['label']['value'])
+            if entity_data['label']:
+                entity_data['label'] = DataLabel(entity_data['label']['value'])
+                
+            data['args'] = (DataEntity.model_validate(entity_data),)
             
-            # Create DataEntity instance
-            return DataEntity.model_validate(data)
-        return data
+        return TaskiqMessage(**data)
 
 
 class HuggingFaceMetadata(StrictBaseModel):

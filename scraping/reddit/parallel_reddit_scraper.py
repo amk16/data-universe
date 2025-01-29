@@ -10,7 +10,7 @@ from scraping.reddit.reddit_custom_scraper import RedditCustomScraper  # adjust 
 from scraping.scraper import ScrapeConfig
 import asyncpraw
 from common.date_range import DateRange
-from common.data import DataLabel, DataEntity, DataEntitySerializer
+from common.data import DataLabel, DataEntity, DataEntityFormatter
 import os
 import random
 import bittensor as bt
@@ -36,9 +36,8 @@ broker = ListQueueBroker(
     url=f"{BASE_REDIS}/0",
     queue_name="reddit_scraper",
     result_backend=redis_async_result,
-    serializer=DataEntitySerializer()
     
-)
+).with_serializer(DataEntitySerializer())
 
 
 @dataclass
