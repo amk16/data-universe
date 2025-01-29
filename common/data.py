@@ -1,6 +1,6 @@
 import dataclasses
 from taskiq.message import BrokerMessage, TaskiqMessage
-from taskiq.formatter import TaskiqFormatter
+from taskiq.abc.formatter import TaskiqFormatter
 import time
 from typing import Any
 import json
