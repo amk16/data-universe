@@ -9,7 +9,6 @@ from common.date_range import DateRange
 from . import utils
 import datetime as dt
 from enum import IntEnum, Enum
-from pydantic import StrictBaseModel, ConfigDict, Field
 from typing import Any, Dict, List, Type, Optional
 from pydantic import (
     BaseModel,
