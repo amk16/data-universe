@@ -158,8 +158,11 @@ class ParallelRedditScraper:
             ]
 
             bt.logging.info(f"Scraping results type of content {type(scraping_results[0][0])}")
+
+            deserialized_data_entities = DataEntitySerializer.deserialize_list(scraping_results[0][0])
+            bt.logging.error(f"deserialized data entities type: {type(deserialized_data_entities[0][0])}")
             
-            return scraping_results
+            return deserialized_data_entities
         except Exception as e:
             bt.logging.error(f"batch scraping failed: {str(e)}")
             return []
