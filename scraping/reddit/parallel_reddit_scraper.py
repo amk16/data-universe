@@ -1,5 +1,5 @@
 from scraping.reddit.redis_config import get_queue_length
-from scraping.reddit.model import RedditContent, RedditDataType, DataEntitySerializer
+from scraping.reddit.model import RedditContent, RedditDataType
 from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 from taskiq import TaskiqResultTimeoutError, TaskiqEvents, TaskiqScheduler
 from aioredis import Redis
@@ -10,7 +10,7 @@ from scraping.reddit.reddit_custom_scraper import RedditCustomScraper  # adjust 
 from scraping.scraper import ScrapeConfig
 import asyncpraw
 from common.date_range import DateRange
-from common.data import DataLabel, DataEntity
+from common.data import DataLabel, DataEntity, DataEntitySerializer
 import os
 import random
 import bittensor as bt

@@ -1,5 +1,5 @@
 import dataclasses
-from taskiq.serializers import json_serializer
+from taskiq.serializers.json_serializer import JsonSerializer
 import time
 from typing import Any
 import json
