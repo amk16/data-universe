@@ -1,5 +1,5 @@
 from scraping.reddit.redis_config import get_queue_length
-from scraping.reddit.model import RedditContent, RedditDataType
+from scraping.reddit.model import RedditContent, RedditDataType, DataEntitySerializer
 from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 from taskiq import TaskiqResultTimeoutError, TaskiqEvents, TaskiqScheduler
 from aioredis import Redis
@@ -35,7 +35,8 @@ redis_async_result = RedisAsyncResultBackend(redis_url=f"{BASE_REDIS}/0")
 broker = ListQueueBroker(
     url=f"{BASE_REDIS}/0",
     queue_name="reddit_scraper",
-    result_backend=redis_async_result
+    result_backend=redis_async_result,
+    serializer=DataEntitySerializer()
     
 )
 

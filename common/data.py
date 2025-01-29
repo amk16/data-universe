@@ -1,5 +1,8 @@
 import dataclasses
+from taskiq.serializers import json_serializer
 import time
+from typing import Any
+import json
 from common import constants
 from common.date_range import DateRange
 from . import utils
@@ -126,6 +129,43 @@ class DataEntity(StrictBaseModel):
                 and this.source == other.source
                 and this.label == other.label
         )
+
+
+class DataEntitySerializer(JsonSerializer):
+    def dumps(self, message: Any) -> bytes:
+        if isinstance(message, DataEntity):
+            data = message.model_dump()
+            # Convert datetime to ISO format with 'Z'
+            data['datetime'] = data['datetime'].strftime('%Y-%m-%dT%H:%M:%SZ')
+            # Keep content as string if it's JSON
+            if isinstance(data['content'], bytes):
+                data['content'] = data['content'].decode('utf-8')
+            # Handle label
+            if data['label']:
+                data['label'] = {'value': data['label'].value}
+            return json.dumps(data).encode()
+        return super().dumps(message)
+    
+    def loads(self, message: bytes) -> Any:
+        data = super().loads(message)
+        if isinstance(data, dict) and 'uri' in data:
+            # Convert datetime string back
+            data['datetime'] = dt.datetime.strptime(
+                data['datetime'], 
+                '%Y-%m-%dT%H:%M:%SZ'
+            ).replace(tzinfo=dt.timezone.utc)
+            
+            # Convert content to bytes if it's a string
+            if isinstance(data['content'], str):
+                data['content'] = data['content'].encode('utf-8')
+            
+            # Handle label reconstruction
+            if data['label']:
+                data['label'] = DataLabel(data['label']['value'])
+            
+            # Create DataEntity instance
+            return DataEntity.model_validate(data)
+        return data
 
 
 class HuggingFaceMetadata(StrictBaseModel):
