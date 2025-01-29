@@ -1,5 +1,5 @@
 import dataclasses
-from taskiq.serializers import JsonSerializer
+from taskiq.serializers import JSONSerializer
 import time
 from typing import Any
 import json
@@ -131,7 +131,7 @@ class DataEntity(StrictBaseModel):
         )
 
 
-class DataEntitySerializer(JsonSerializer):
+class DataEntitySerializer(JSONSerializer):
     def dumps(self, message: Any) -> bytes:
         if isinstance(message, DataEntity):
             data = message.model_dump()
