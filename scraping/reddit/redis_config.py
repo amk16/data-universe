@@ -1,6 +1,7 @@
 # redis_config.py
 import os
 from common.data import DataEntity
+from enum import Enum
 from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 from taskiq import TaskiqEvents, TaskiqScheduler
 from aioredis import Redis
