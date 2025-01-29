@@ -159,7 +159,11 @@ class ParallelRedditScraper:
 
             bt.logging.info(f"Scraping results type of content {type(scraping_results[0][0])}")
 
-            deserialized_data_entities = DataEntitySerializer.deserialize_list(scraping_results[0][0])
+            deserialized_data_entities = []
+
+            for result in scraping_results:
+                deserialized_data_entities.append(DataEntitySerializer.deserialize_list(result))
+
             bt.logging.error(f"deserialized data entities type: {type(deserialized_data_entities[0][0])}")
             
             return deserialized_data_entities
