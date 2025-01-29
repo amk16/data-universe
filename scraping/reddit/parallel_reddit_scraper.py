@@ -37,7 +37,8 @@ broker = ListQueueBroker(
     queue_name="reddit_scraper",
     result_backend=redis_async_result,
     
-).with_serializer(DataEntityFormatter())
+)
+#.with_serializer(DataEntityFormatter())
 
 
 @dataclass
