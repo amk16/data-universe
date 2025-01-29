@@ -101,7 +101,7 @@ class DataEntitySerializer:
         
         # Convert ISO format string back to datetime
         if isinstance(data['datetime'], str):
-            data['datetime'] = dt.datetime.fromisoformat(data['datetime'])
+            data['datetime'] = datetime.fromisoformat(data['datetime'])
         
         # Convert content string back to bytes
         if isinstance(data['content'], str):
