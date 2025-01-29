@@ -32,7 +32,7 @@
 
         {
             "scraper_id": "Reddit.parallel",
-            "cadence_seconds": 60,
+            "cadence_seconds": 10,
             "labels_to_scrape": [
                 {
                     "label_choices": [
@@ -51,7 +51,7 @@
                         "r/Solana",
                         "r/WallstreetBets"
                     ],
-                    "max_data_entities": 5,
+                    "max_data_entities": 1,
                     "max_age_hint_minutes": 60
                 }
             ]

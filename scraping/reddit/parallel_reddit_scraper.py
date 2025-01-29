@@ -37,7 +37,7 @@ broker = ListQueueBroker(
     queue_name="reddit_scraper",
     result_backend=redis_async_result,
     
-).with_serializer(DataEntityFormatter())
+)
 
 
 @dataclass
@@ -103,7 +103,8 @@ class ParallelRedditScraper:
 
 
     async def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
-
+        bt.logging.info(f"the broker without the serializer is {broker}")
+        bt.logging.info(f"the broker with the serializer is {broker.with_serializer(DataEntityFormatter())}")
         bt.logging.info(f"Scraping of {subreddit} started")
         start_time = time.time()
 
