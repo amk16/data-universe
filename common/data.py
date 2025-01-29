@@ -8,7 +8,8 @@ from common import constants
 from common.date_range import DateRange
 from . import utils
 import datetime as dt
-from enum import IntEnum
+from enum import IntEnum, Enum
+from pydantic import StrictBaseModel, ConfigDict, Field
 from typing import Any, Dict, List, Type, Optional
 from pydantic import (
     BaseModel,
@@ -173,7 +174,7 @@ class DataEntityFormatter(TaskiqFormatter):
         except Exception as e:
             bt.logging.error(f"Error in loads: {str(e)}")
             raise
-        
+
 
 class HuggingFaceMetadata(StrictBaseModel):
     repo_name: str

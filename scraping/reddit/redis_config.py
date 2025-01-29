@@ -4,6 +4,10 @@ from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 from taskiq import TaskiqEvents, TaskiqScheduler
 from aioredis import Redis
 import bittensor as bt
+import json
+from datetime import datetime, timezone
+from typing import List, Dict, Any, Union
+from dataclasses import asdict
 # Redis connection configuration
 REDIS_CONFIG = {
     "host": os.getenv("REDIS_HOST", "localhost"),
@@ -60,6 +64,67 @@ async def get_queue_length(broker) -> int:
         queue_length = await redis_conn.llen("reddit_scraper")
         bt.logging.info(f"Current queue length: {queue_length}")
         return queue_length
+
+
+
+
+
+class DataEntitySerializer:
+    @staticmethod
+    def to_json(entity: DataEntity) -> str:
+        """
+        Serialize a DataEntity object to JSON string.
+        Handles Pydantic model serialization with proper type conversion.
+        """
+        # Convert to dict using Pydantic's built-in method
+        entity_dict = entity.model_dump()
+        
+        # Handle special field conversions
+        entity_dict['datetime'] = entity_dict['datetime'].isoformat()
+        entity_dict['content'] = entity_dict['content'].decode('utf-8') if isinstance(entity_dict['content'], bytes) else entity_dict['content']
+        
+        # Handle Enum serialization for DataSource
+        if isinstance(entity_dict['source'], Enum):
+            entity_dict['source'] = entity_dict['source'].value
+            
+        return json.dumps(entity_dict)
+
+    @staticmethod
+    def from_json(json_str: str) -> DataEntity:
+        """
+        Deserialize a JSON string back to a DataEntity object.
+        Ensures proper type conversion for Pydantic model.
+        """
+        data = json.loads(json_str)
+        
+        # Convert ISO format string back to datetime
+        if isinstance(data['datetime'], str):
+            data['datetime'] = dt.datetime.fromisoformat(data['datetime'])
+        
+        # Convert content string back to bytes
+        if isinstance(data['content'], str):
+            data['content'] = data['content'].encode('utf-8')
+            
+        # DataSource should be handled automatically by Pydantic's type system
+        # as long as it's a valid value for the enum
+            
+        # Create new DataEntity using Pydantic's type validation
+        return DataEntity(**data)
+
+    @staticmethod
+    def serialize_list(entities: List[DataEntity]) -> str:
+        """
+        Serialize a list of DataEntity objects.
+        """
+        return json.dumps([json.loads(DataEntitySerializer.to_json(entity)) for entity in entities])
+
+    @staticmethod
+    def deserialize_list(json_str: str) -> List[DataEntity]:
+        """
+        Deserialize a JSON string back to a list of DataEntity objects.
+        """
+        data_list = json.loads(json_str)
+        return [DataEntitySerializer.from_json(json.dumps(item)) for item in data_list]
 
 
         

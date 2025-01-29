@@ -1,4 +1,4 @@
-from scraping.reddit.redis_config import get_queue_length
+from scraping.reddit.redis_config import get_queue_length, DataEntitySerializer
 from scraping.reddit.model import RedditContent, RedditDataType
 from taskiq_redis import ListQueueBroker, RedisAsyncResultBackend
 from taskiq import TaskiqResultTimeoutError, TaskiqEvents, TaskiqScheduler
@@ -10,7 +10,7 @@ from scraping.reddit.reddit_custom_scraper import RedditCustomScraper  # adjust 
 from scraping.scraper import ScrapeConfig
 import asyncpraw
 from common.date_range import DateRange
-from common.data import DataLabel, DataEntity, DataEntityFormatter
+from common.data import DataLabel, DataEntity
 import os
 import random
 import bittensor as bt
@@ -84,12 +84,15 @@ async def scrape_subreddit(task: ScrapingTask) -> List[DataEntity]:
 
             for content in contents:
                 converted_content = RedditContent.to_data_entity(content)
-                bt.logging.error(f"type of this converted content is {type(converted_content)}")
-                bt.logging.error(f'converting content to data_entity:{converted_content}')
+                #bt.logging.error(f"type of this converted content is {type(converted_content)}")
+                #bt.logging.error(f'converting content to data_entity:{converted_content}')
                 data_entities.append(converted_content)
+            
+            serialized_data_entities =  DataEntitySerializer.serialize_list(data_entities)
+            bt.logging.error(f"serialized data entities: {serialized_data_entities}")
                 
                 
-            return data_entities
+            return serialized_data_entities
             
     except Exception as e:
         bt.logging.error(f"Failed to scrape subreddit {task.subreddit}: {str(e)}")
@@ -103,8 +106,6 @@ class ParallelRedditScraper:
 
 
     async def _scrape_one(self, subreddit: str, entity_limit: int, date_range: DateRange, fetch_submissions: bool, timeout: int) -> List[DataEntity]:
-        bt.logging.info(f"the broker without the serializer is {broker}")
-        bt.logging.info(f"the broker with the serializer is {broker.with_serializer(DataEntityFormatter())}")
         bt.logging.info(f"Scraping of {subreddit} started")
         start_time = time.time()
 
