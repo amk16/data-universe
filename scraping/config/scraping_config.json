@@ -51,7 +51,7 @@
                         "r/Solana",
                         "r/WallstreetBets"
                     ],
-                    "max_data_entities": 10,
+                    "max_data_entities": 5,
                     "max_age_hint_minutes": 60
                 }
             ]

@@ -21,7 +21,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+#CURRENT ISSUE
+#REDIS BACKEND RETURNS THE DATA ENTITY OBJECT AS A NORMAL DICT
+#Potential fixes: 
 
 # Potential improvements:
 # Circulate between reddit accounts for scraping to mitigate rate limiting
